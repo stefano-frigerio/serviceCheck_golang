@@ -41,6 +41,7 @@ func check(i int) {
 		fmt.Println(string(out), regexp.MustCompile(service[i].Regexp).Match(out))
 		if service[i].LastStatus != string(out) {
 			//alertTelegram()
+			service[i].LastStatus = string(out)
 			err := SendSlackNotification(webhookURL, "STATUS CHANGED")
 			if err != nil {
 				log.Fatal(err)
