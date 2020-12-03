@@ -9,6 +9,7 @@ import (
 )
 
 var db *gorm.DB
+var service []Service
 
 type Service struct {
 	Command    string
@@ -18,9 +19,22 @@ type Service struct {
 	LastStatus string
 }
 
+func check(i int) {
+	for {
+		t := time.Duration(service[i].Interval) * time.Second
+		fmt.Print(service[i].Name)
+		/*out, err := exec.Command(service[i].Command).Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Print("Return", out)
+		service[i].LastStatus = string(out)*/
+		time.Sleep(t)
+	}
+}
+
 func main() {
 	var err error
-	var service []Service
 	db, err = gorm.Open(sqlite.Open("service_test.db"), &gorm.Config{})
 	if err != nil {
 		panic("Connection failed")
@@ -29,29 +43,11 @@ func main() {
 	//db.Create(&Service{Command: "service ssh status | grep Active", Regexp: "", Interval: 20, Name: "status", LastStatus: ""})
 	//db.Create(&Service{Command: "service2 ssh status | grep Active", Regexp: "", Interval: 30, Name: "status2", LastStatus: ""})
 	db.Find(&service)
-	var t time.Duration
-	t = time.Duration(service[1].Interval) * time.Second
-	fmt.Println(t)
-
-	go func() {
-		for {
-			fmt.Print("CIAO")
-			time.Sleep(t)
-		}
-	}()
+	for i := 0; i < len(service); i++ {
+		fmt.Println(i)
+		go check(i)
+	}
 	for {
 		time.Sleep(1 * time.Second)
 	}
-	/*
-		for i := 0; i < len(service); i++ {
-			t := service[i].Interval
-			go func() {
-				for {
-					fmt.Print("CIAO")
-					time.Sleep(t * time.Second)
-				}
-			}()
-		}
-	*/
-
 }
