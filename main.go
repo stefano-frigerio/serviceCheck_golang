@@ -32,13 +32,13 @@ func main() {
 	var t time.Duration
 	t = time.Duration(service[1].Interval) * time.Second
 	fmt.Println(t)
+
 	go func() {
 		for {
 			fmt.Print("CIAO")
-			time.Sleep(t * time.Second)
+			time.Sleep(t)
 		}
 	}()
-	fmt.Println("SDC")
 	for {
 		time.Sleep(1 * time.Second)
 	}
