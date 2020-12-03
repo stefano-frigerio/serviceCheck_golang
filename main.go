@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os/exec"
 	"regexp"
 	"time"
@@ -13,6 +17,7 @@ import (
 
 var db *gorm.DB
 var service []Service
+var webhookURL = "WEBHOOK"
 
 type Service struct {
 	Command    string
@@ -21,20 +26,25 @@ type Service struct {
 	Name       string
 	LastStatus string
 }
+type SlackRequestBody struct {
+	Text string `json:"text"`
+}
 
 func check(i int) {
 	for {
 		t := time.Duration(service[i].Interval) * time.Second
 		fmt.Print(service[i].Name)
-		out, err := exec.Command(service[i].Command).Output()
+		out, err := exec.Command("bash", "-c", service[i].Command).Output()
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Print("Return", out)
-		if string(out) != service[i].LastStatus {
-			fmt.Println(string(out), regexp.MustCompile(service[i].Regexp).Match(out))
-			service[i].LastStatus = string(out)
+		fmt.Println(string(out), regexp.MustCompile(service[i].Regexp).Match(out))
+		if service[i].LastStatus != string(out) {
 			//alertTelegram()
+			err := SendSlackNotification(webhookURL, "STATUS CHANGED")
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 		time.Sleep(t)
 	}
@@ -56,4 +66,27 @@ func main() {
 	for {
 		time.Sleep(1 * time.Second)
 	}
+}
+func SendSlackNotification(webhookURL string, msg string) error {
+
+	slackBody, _ := json.Marshal(SlackRequestBody{Text: msg})
+	req, err := http.NewRequest(http.MethodPost, webhookURL, bytes.NewBuffer(slackBody))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resp.Body)
+	if buf.String() != "ok" {
+		return errors.New("Non-ok response returned from Slack")
+	}
+	return nil
 }
