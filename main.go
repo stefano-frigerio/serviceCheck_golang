@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os/exec"
+	"regexp"
 	"time"
 
 	"gorm.io/driver/sqlite"
@@ -23,16 +26,16 @@ func check(i int) {
 	for {
 		t := time.Duration(service[i].Interval) * time.Second
 		fmt.Print(service[i].Name)
-		/*out, err := exec.Command(service[i].Command).Output()
+		out, err := exec.Command(service[i].Command).Output()
 		if err != nil {
 			log.Fatal(err)
 		}
 		fmt.Print("Return", out)
-		if out !=service[i].LastStatus {
+		if string(out) != service[i].LastStatus {
+			fmt.Println(string(out), regexp.MustCompile(service[i].Regexp).Match(out))
 			service[i].LastStatus = string(out)
-			alertTelegram();
+			//alertTelegram()
 		}
-		*/
 		time.Sleep(t)
 	}
 }
@@ -48,7 +51,6 @@ func main() {
 	//db.Create(&Service{Command: "service2 ssh status | grep Active", Regexp: "", Interval: 30, Name: "status2", LastStatus: ""})
 	db.Find(&service)
 	for i := 0; i < len(service); i++ {
-		fmt.Println(i)
 		go check(i)
 	}
 	for {
