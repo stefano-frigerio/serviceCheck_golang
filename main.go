@@ -28,7 +28,11 @@ func check(i int) {
 			log.Fatal(err)
 		}
 		fmt.Print("Return", out)
-		service[i].LastStatus = string(out)*/
+		if out !=service[i].LastStatus {
+			service[i].LastStatus = string(out)
+			alertTelegram();
+		}
+		*/
 		time.Sleep(t)
 	}
 }
