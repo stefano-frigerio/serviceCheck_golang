@@ -19,7 +19,7 @@ import (
 var db *gorm.DB
 var bot *tgbotapi.BotAPI
 var service []Service
-var webhookURLSlack = "https://hooks.slack.com/services/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"
+var webhookURLSlack = "https://hooks.slack.com/services/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"
 var webhookTelegram = "1376434732:AAE6YwG6QgnHB_TCFEaM2NnTjANFUsM23dY"
 var chat_id = "@rezalert"
 
