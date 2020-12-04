@@ -19,8 +19,8 @@ import (
 var db *gorm.DB
 var bot *tgbotapi.BotAPI
 var service []Service
-var webhookURLSlack = "https://hooks.slack.com/services/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"
-var webhookTelegram = "1376434732:AAE6YwG6QgnHB_TCFEaM2NnTjANFUsM23dY"
+var webhookURLSlack = "YOUR_WEBHOOK"
+var webhookTelegram = "YOUR_WEBHOOK"
 
 type Service struct {
 	Command    string
