@@ -18,8 +18,8 @@ import (
 
 var db *gorm.DB
 var service []Service
-var webhookURLSlack = "https://hooks.slack.com/services/YOUR_WEBHOOK"
-var webhookTelegram = "YOUR_WEBHOOK"
+var webhookURLSlack = "https://hooks.slack.com/services/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"
+var webhookTelegram = "1376434732:AAE6YwG6QgnHB_TCFEaM2NnTjANFUsM23dY"
 var chat_id = "@rezalert"
 
 type Service struct {
@@ -51,14 +51,17 @@ func check(i int) {
 				"chat_id": {chat_id},
 				"text":    {message},
 			}
+			fmt.Print(params)
 			err := SendSlackNotification(webhookURLSlack, message)
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = SendTelegramNotification(params)
-			if err != nil {
-				log.Fatal(err)
-			}
+			/*
+				err = SendTelegramNotification(params)
+				if err != nil {
+					log.Fatal(err)
+				}
+			*/
 		}
 		time.Sleep(t)
 	}
@@ -71,7 +74,7 @@ func main() {
 		panic("Connection failed")
 	}
 	db.AutoMigrate(&Service{})
-	//db.Create(&Service{Command: "service ssh status | grep Active", Regexp: "", Interval: 20, Name: "status", LastStatus: ""})
+	db.Create(&Service{Command: "service ssh status | grep Active", Regexp: "", Interval: 20, Name: "status", LastStatus: ""})
 	//db.Create(&Service{Command: "service2 ssh status | grep Active", Regexp: "", Interval: 30, Name: "status2", LastStatus: ""})
 	db.Find(&service)
 	for i := 0; i < len(service); i++ {
@@ -84,6 +87,7 @@ func main() {
 
 func SendTelegramNotification(params url.Values) error {
 	resp, err := http.PostForm("https://api.telegram.org/bot", params)
+	fmt.Print(resp)
 
 	if err != nil {
 		panic(err)
