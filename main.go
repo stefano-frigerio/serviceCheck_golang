@@ -45,6 +45,7 @@ func check(i int) {
 		if service[i].LastStatus != string(out) {
 			//alertTelegram()
 			service[i].LastStatus = string(out)
+			db.Model(&Service{}).Where("name = ?", service[i].Name).Update("LastStatus", service[i].LastStatus)
 			message := service[i].LastStatus
 			err := SendSlackNotification(webhookURLSlack, message)
 			if err != nil {
