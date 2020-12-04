@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os/exec"
 	"regexp"
 	"time"
@@ -17,7 +18,9 @@ import (
 
 var db *gorm.DB
 var service []Service
-var webhookURL = "WEBHOOK"
+var webhookURLSlack = "https://hooks.slack.com/services/YOUR_WEBHOOK"
+var webhookTelegram = "YOUR_WEBHOOK"
+var chat_id = "@rezalert"
 
 type Service struct {
 	Command    string
@@ -42,7 +45,17 @@ func check(i int) {
 		if service[i].LastStatus != string(out) {
 			//alertTelegram()
 			service[i].LastStatus = string(out)
-			err := SendSlackNotification(webhookURL, "STATUS CHANGED")
+			message := "Message to send"
+			params := url.Values{
+				"webhook": {webhookURLSlack},
+				"chat_id": {chat_id},
+				"text":    {message},
+			}
+			err := SendSlackNotification(webhookURLSlack, message)
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = SendTelegramNotification(params)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -68,6 +81,20 @@ func main() {
 		time.Sleep(1 * time.Second)
 	}
 }
+
+func SendTelegramNotification(params url.Values) error {
+	resp, err := http.PostForm("https://api.telegram.org/bot", params)
+
+	if err != nil {
+		panic(err)
+	}
+	var res map[string]interface{}
+	json.NewDecoder(resp.Body).Decode(&res)
+
+	fmt.Println(res["form"])
+	return nil
+}
+
 func SendSlackNotification(webhookURL string, msg string) error {
 
 	slackBody, _ := json.Marshal(SlackRequestBody{Text: msg})
