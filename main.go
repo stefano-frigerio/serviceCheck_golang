@@ -47,7 +47,7 @@ func check(i int) {
 			service[i].LastStatus = string(out)
 			message := "Message to send"
 			params := url.Values{
-				"webhook": {webhookURLSlack},
+				"webhook": {webhookTelegram},
 				"chat_id": {chat_id},
 				"text":    {message},
 			}
@@ -74,7 +74,7 @@ func main() {
 		panic("Connection failed")
 	}
 	db.AutoMigrate(&Service{})
-	db.Create(&Service{Command: "service ssh status | grep Active", Regexp: "", Interval: 20, Name: "status", LastStatus: ""})
+	//db.Create(&Service{Command: "service ssh status | grep Active", Regexp: "", Interval: 20, Name: "status", LastStatus: ""})
 	//db.Create(&Service{Command: "service2 ssh status | grep Active", Regexp: "", Interval: 30, Name: "status2", LastStatus: ""})
 	db.Find(&service)
 	for i := 0; i < len(service); i++ {
