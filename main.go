@@ -12,14 +12,16 @@ import (
 	"regexp"
 	"time"
 
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
+var bot *tgbotapi.BotAPI
 var service []Service
-var webhookURLSlack = "https://hooks.slack.com/services/....."
-var webhookTelegram = "......"
+var webhookURLSlack = "https://hooks.slack.com/services/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"
+var webhookTelegram = "1376434732:AAE6YwG6QgnHB_TCFEaM2NnTjANFUsM23dY"
 var chat_id = "@rezalert"
 
 type Service struct {
@@ -56,12 +58,10 @@ func check(i int) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			/*
-				err = SendTelegramNotification(params)
-				if err != nil {
-					log.Fatal(err)
-				}
-			*/
+			err = SendTelegramNotification(params)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 		time.Sleep(t)
 	}
@@ -86,16 +86,14 @@ func main() {
 }
 
 func SendTelegramNotification(params url.Values) error {
-	resp, err := http.PostForm("https://api.telegram.org/bot", params)
-	fmt.Print(resp)
-
+	var err error
+	bot, err = tgbotapi.NewBotAPI(webhookTelegram)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	var res map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&res)
-
-	fmt.Println(res["form"])
+	msg := tgbotapi.NewMessageToChannel("@rezalert", s)
+	msg.ParseMode = "HTML"
+	bot.Send(msg)
 	return nil
 }
 
