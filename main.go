@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os/exec"
 	"regexp"
 	"time"
@@ -48,17 +47,11 @@ func check(i int) {
 			//alertTelegram()
 			service[i].LastStatus = string(out)
 			message := "Message to send"
-			params := url.Values{
-				"webhook": {webhookTelegram},
-				"chat_id": {chat_id},
-				"text":    {message},
-			}
-			fmt.Print(params)
 			err := SendSlackNotification(webhookURLSlack, message)
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = SendTelegramNotification(params)
+			err = SendTelegramNotification(message)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -85,13 +78,13 @@ func main() {
 	}
 }
 
-func SendTelegramNotification(params url.Values) error {
+func SendTelegramNotification(message string) error {
 	var err error
 	bot, err = tgbotapi.NewBotAPI(webhookTelegram)
 	if err != nil {
 		log.Fatal(err)
 	}
-	msg := tgbotapi.NewMessageToChannel("@rezalert", s)
+	msg := tgbotapi.NewMessageToChannel("@rezalert", message)
 	msg.ParseMode = "HTML"
 	bot.Send(msg)
 	return nil
