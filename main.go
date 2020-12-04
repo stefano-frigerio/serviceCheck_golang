@@ -18,8 +18,8 @@ import (
 
 var db *gorm.DB
 var service []Service
-var webhookURLSlack = "https://hooks.slack.com/services/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"
-var webhookTelegram = "1376434732:AAE6YwG6QgnHB_TCFEaM2NnTjANFUsM23dY"
+var webhookURLSlack = "https://hooks.slack.com/services/....."
+var webhookTelegram = "......"
 var chat_id = "@rezalert"
 
 type Service struct {
