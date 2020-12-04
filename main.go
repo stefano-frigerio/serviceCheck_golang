@@ -16,7 +16,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var db sql.DB
+var db *sql.DB
 var bot *tgbotapi.BotAPI
 var service []Service
 var webhookURLSlack = "YOUR_WEBHOOK"
@@ -66,16 +66,18 @@ func check(i int) {
 
 func main() {
 	var err error
-	db, err := sql.Open("mysql", "username:password@tcp(127.0.0.1:3306)/service_test")
+	db, err = sql.Open("mysql", "username:password@tcp(127.0.0.1:3306)/service_test")
 	if err != nil {
 		panic(err.Error())
 	}
 	defer db.Close()
-	insert, err := db.Query("INSERT INTO services VALUES ('service cron status | grep Active', '', 20, 'cron', '')")
-	if err != nil {
-		panic(err.Error())
-	}
-	defer insert.Close()
+	/*
+		insert, err := db.Query("INSERT INTO services VALUES ('service cron status | grep Active', '', 20, 'cron', '')")
+		if err != nil {
+			panic(err.Error())
+		}
+		defer insert.Close()
+	*/
 	results, err := db.Query("SELECT * FROM services")
 	if err != nil {
 		panic(err.Error())
