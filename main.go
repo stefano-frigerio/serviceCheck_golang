@@ -19,7 +19,7 @@ import (
 var db *gorm.DB
 var bot *tgbotapi.BotAPI
 var service []Service
-var webhookURLSlack = "https://hooks.slack.com/services/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"
+var webhookURLSlack = "https://hooks.slack.com/services/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"
 var webhookTelegram = "1376434732:AAE6YwG6QgnHB_TCFEaM2NnTjANFUsM23dY"
 
 type Service struct {
@@ -45,7 +45,7 @@ func check(i int) {
 		if service[i].LastStatus != string(out) {
 			//alertTelegram()
 			service[i].LastStatus = string(out)
-			message := "Message to send"
+			message := service[i].LastStatus
 			err := SendSlackNotification(webhookURLSlack, message)
 			if err != nil {
 				log.Fatal(err)
