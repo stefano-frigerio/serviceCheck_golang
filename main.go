@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,11 +11,13 @@ import (
 	"regexp"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var db *sql.DB
+var db *gorm.DB
 var bot *tgbotapi.BotAPI
 var service []Service
 var webhookURLSlack = "YOUR_WEBHOOK"
@@ -44,12 +45,7 @@ func check(i int) {
 		fmt.Println(string(out), regexp.MustCompile(service[i].Regexp).Match(out))
 		if service[i].LastStatus != string(out) {
 			service[i].LastStatus = string(out)
-			update, err := db.Query("UPDATE services SET (laststatus) VALUES ('" + string(out) + "') WHERE name = '" + service[i].Name + "'")
-			if err != nil {
-				panic(err.Error()) // proper error handling instead of panic in your app
-			}
-			defer update.Close()
-			////////db.Model(&Service{}).Where("name = ?", service[i].Name).Update("LastStatus", service[i].LastStatus)
+			db.Where("name = ?", service[i].Name).Update("LastStatus", service[i].LastStatus)
 			message := service[i].LastStatus
 			err = SendSlackNotification(webhookURLSlack, message)
 			if err != nil {
@@ -66,37 +62,15 @@ func check(i int) {
 
 func main() {
 	var err error
-	db, err = sql.Open("mysql", "username:password@tcp(127.0.0.1:3306)/service_test")
+	dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic(err.Error())
+		fmt.Println("KO")
 	}
-	defer db.Close()
-	/*
-		insert, err := db.Query("INSERT INTO services VALUES ('service cron status | grep Active', '', 20, 'cron', '')")
-		if err != nil {
-			panic(err.Error())
-		}
-		defer insert.Close()
-	*/
-	results, err := db.Query("SELECT * FROM services")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	for results.Next() {
-		var service Service
-		err = results.Scan(&service.Command, &service.Regexp, &service.Interval, &service.Name, &service.LastStatus)
-		if err != nil {
-			panic(err.Error())
-		}
-		log.Printf(service.Name)
-	}
-	/*
-		db.AutoMigrate(&Service{})
-		//db.Create(&Service{Command: "service ssh status | grep Active", Regexp: "", Interval: 20, Name: "status", LastStatus: ""})
-		//db.Create(&Service{Command: "service2 ssh status | grep Active", Regexp: "", Interval: 30, Name: "status2", LastStatus: ""})
-		db.Find(&service)
-	*/
+	db.AutoMigrate(&Service{})
+	//db.Create(&Service{Command: "service ssh status | grep Active", Regexp: "", Interval: 20, Name: "status", LastStatus: ""})
+	//db.Create(&Service{Command: "service2 ssh status | grep Active", Regexp: "", Interval: 30, Name: "status2", LastStatus: ""})
+	db.Find(&service)
 	for i := 0; i < len(service); i++ {
 		go check(i)
 	}
