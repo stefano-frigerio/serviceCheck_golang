@@ -45,7 +45,7 @@ func check(i int) {
 		fmt.Println(string(out), regexp.MustCompile(service[i].Regexp).Match(out))
 		if service[i].LastStatus != string(out) {
 			service[i].LastStatus = string(out)
-			db.Where("name = ?", service[i].Name).Update("LastStatus", service[i].LastStatus)
+			db.Where("name = ?", service[i].Name).Updates(service[i])
 			message := service[i].LastStatus
 			err = SendSlackNotification(webhookURLSlack, message)
 			if err != nil {
@@ -63,7 +63,7 @@ func check(i int) {
 func main() {
 	var err error
 	dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Println("KO")
 	}
