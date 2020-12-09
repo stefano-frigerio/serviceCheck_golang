@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"regexp"
 	"time"
@@ -42,11 +43,13 @@ func check(i int) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(string(out), regexp.MustCompile(service[i].Regexp).Match(out))
+		fmt.Println(service[i].Name+": ", string(out), regexp.MustCompile(service[i].Regexp).Match(out))
 		if service[i].LastStatus != string(out) {
 			service[i].LastStatus = string(out)
 			db.Where("name = ?", service[i].Name).Updates(service[i])
-			message := service[i].LastStatus
+			var name string
+			name, err = os.Hostname()
+			message := service[i].Name + ":" + service[i].LastStatus + "Machine: " + name
 			err = SendSlackNotification(webhookURLSlack, message)
 			if err != nil {
 				log.Fatal(err)
