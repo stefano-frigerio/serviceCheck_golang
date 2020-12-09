@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
-	"os"
 	"os/exec"
 	"regexp"
 	"time"
@@ -47,9 +47,10 @@ func check(i int) {
 		if service[i].LastStatus != string(out) {
 			service[i].LastStatus = string(out)
 			db.Where("name = ?", service[i].Name).Updates(service[i])
-			var name string
-			name, err = os.Hostname()
-			message := service[i].Name + ":" + service[i].LastStatus + "Machine: " + name
+			conn, err := net.Dial("udp", "8.8.8.8:80")
+			defer conn.Close()
+			localAddr := conn.LocalAddr().(*net.UDPAddr).String()
+			message := service[i].Name + ":" + service[i].LastStatus + "Machine: " + localAddr
 			err = SendSlackNotification(webhookURLSlack, message)
 			if err != nil {
 				log.Fatal(err)
